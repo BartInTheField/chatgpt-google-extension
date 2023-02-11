@@ -61,10 +61,12 @@ export class ChatGPTProvider implements Provider {
   private async getModelName(): Promise<string> {
     try {
       const models = await this.fetchModels()
-      return models[0].slug
+
+      // Try to use turbo
+      return models[1].slug
     } catch (err) {
       console.error(err)
-      return 'text-davinci-002-render'
+      return 'text-davinci-002-paid'
     }
   }
 
