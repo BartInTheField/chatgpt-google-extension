@@ -58,15 +58,21 @@ export class ChatGPTProvider implements Provider {
     return resp.models
   }
 
+  private DEFAULT_MODEL = 'text-davinci-002-paid'
+
   private async getModelName(): Promise<string> {
     try {
       const models = await this.fetchModels()
 
       // Try to use turbo
-      return models[1].slug
+      if (models[1].slug) {
+        return models[1].slug
+      } else {
+        return models[0].slug
+      }
     } catch (err) {
       console.error(err)
-      return 'text-davinci-002-paid'
+      return this.DEFAULT_MODEL
     }
   }
 
@@ -79,7 +85,7 @@ export class ChatGPTProvider implements Provider {
       }
     }
 
-    const modelName = await this.getModelName()
+    const modelName = params.useDefaultModel ? await this.getModelName() : this.DEFAULT_MODEL
     console.debug('Using model:', modelName)
 
     await fetchSSE('https://chat.openai.com/backend-api/conversation', {

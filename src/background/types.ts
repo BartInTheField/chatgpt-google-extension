@@ -12,6 +12,7 @@ export type Event =
 export interface GenerateAnswerParams {
   prompt: string
   onEvent: (event: Event) => void
+  useDefaultModel: boolean
   signal?: AbortSignal
 }
 

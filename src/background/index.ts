@@ -4,7 +4,11 @@ import { ChatGPTProvider, getChatGPTAccessToken, sendMessageFeedback } from './p
 import { OpenAIProvider } from './providers/openai'
 import { Provider } from './types'
 
-async function generateAnswers(port: Browser.Runtime.Port, question: string) {
+async function generateAnswers(
+  port: Browser.Runtime.Port,
+  question: string,
+  useDefaultModel = false,
+) {
   const providerConfigs = await getProviderConfigs()
 
   let provider: Provider
@@ -27,6 +31,7 @@ async function generateAnswers(port: Browser.Runtime.Port, question: string) {
   const { cleanup } = await provider.generateAnswer({
     prompt: question,
     signal: controller.signal,
+    useDefaultModel: useDefaultModel,
     onEvent(event) {
       if (event.type === 'done') {
         port.postMessage({ event: 'DONE' })
@@ -43,8 +48,12 @@ Browser.runtime.onConnect.addListener((port) => {
     try {
       await generateAnswers(port, msg.question)
     } catch (err: any) {
-      console.error(err)
-      port.postMessage({ error: err.message })
+      try {
+        await generateAnswers(port, msg.question, true)
+      } catch (e) {
+        console.error(err)
+        port.postMessage({ error: err.message })
+      }
     }
   })
 })
